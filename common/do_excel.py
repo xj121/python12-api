@@ -38,6 +38,7 @@ class DoExcel:
 
     def __init__(self, file_name):  # DoExcel初始化函数
         try:
+            self.file_name = file_name
             # 打开一个excel文件，返回一个workbook对象实例，把它定义为DoExcel的属性，以便于在这个类的其他地方使用
             self.workbook = openpyxl.load_workbook(filename=file_name)
         except FileNotFoundError as e:
@@ -61,25 +62,34 @@ class DoExcel:
 
         return cases  # for 循环结束后返回cases列表
 
-    def get_sheet_names(self):
+    def get_sheet_names(self):  # 获取到work boot里面所有的sheet名称的列表
         return self.workbook.sheetnames
+
+    # 根据sheet name 定位到sheet，然后根据case_id定位到行，取到当前行里面actual这个单元格，
+    # 然后给他赋值，最后保存当前workbook
+    def write_back_by_case_id(self, sheet_name, case_id, actual, result):
+        sheet = self.workbook[sheet_name]  # 根据sheet名称获取sheet对象实例
+        max_row = sheet.max_row  # 获取sheet最大行数
+        for r in range(2, max_row + 1):  # for 循环，从第二行开始遍历
+            case_id_r = sheet.cell(r, 1).value  # 获取第r行，第1列，也就是case_id这一列的值
+            if case_id_r == case_id:  # 判断excel里面取到的当前行的case id 是否等于传进来的case id
+                sheet.cell(r, 7).value = actual  # 写入传进来的actual到当前行的actual列的单元格
+                sheet.cell(r, 8).value = result  # 写入传进来的result到当前行的result列的单元格
+                self.workbook.save(filename=self.file_name)
+                break
 
 
 if __name__ == '__main__':
     print('comming')
     #  测试一下DoExcel类
     do_excel = DoExcel('../datas/cases.xlsx')  # 实例化一个DoExcel对象
-
-    sheet_names = do_excel.get_sheet_names()  # 获取Excel文件中全部sheet名称
-
-    cases_list = ['login', 'register']
-
-    #  根据sheet_names 分别取到全部用例来执行
+    sheet_names = do_excel.get_sheet_names()  # 获取到work boot里面所有的sheet名称的列表
+    print("sheet 名称列表：", sheet_names)
+    case_list = ['login', 'register']  # 定义一个执行测试用例的列表
     for sheet_name in sheet_names:
-        # 获取login的所有测试用例，返回的是一个cases列表，列表里面是多个Case类实例，每个实例的属性对应Excel表中每列的值
-        if sheet_name in cases_list:
+        if sheet_name in case_list:  # 如果当前的这个sheet_name 不在可执行的case_list里面，就不执行
             cases = do_excel.get_cases(sheet_name)
-            print(sheet_name+' 测试用例个数：', len(cases))
+            print(sheet_name + ' 测试用例个数：', len(cases))
             for case in cases:  # 遍历测试用例列表，每进for一次，就取一个case实例
                 print("case信息：", case.__dict__)  # 打印case信息
                 data = eval(case.data)  # Excel里面取到data是一个字符串，使用eval函数将字符串转换成字典
@@ -92,5 +102,10 @@ if __name__ == '__main__':
                 # 判断接口响应是否和Excel里面expected的值是否一致
                 if case.expected == resp.get_text():
                     print("result : PASS")
+                    do_excel.write_back_by_case_id(sheet_name=sheet_name, case_id=case.case_id, actual=resp.get_text(),
+                                                   result='PASS')  # 期望结果与实际结果一致，就写入PASS到result这个单元格
                 else:
                     print("result : FAIL")
+                    do_excel.write_back_by_case_id(sheet_name=sheet_name, case_id=case.case_id,
+                                                   actual=resp.get_text(),
+                                                   result='FAIL')  # 期望结果与实际结果一致，就写入FAIL到result这个单元格
