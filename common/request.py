@@ -47,3 +47,10 @@ class Request:
         resp_text = json.dumps(json_dict, ensure_ascii=False, indent=4)
         print('response: ', resp_text)  # 打印响应
         return json_dict
+
+    def get_cookies(self, key=None):  # 返回cookies
+        print(self.resp.cookies)
+        if key is not None:
+            return self.resp.cookies[key]
+        else:
+            return self.resp.cookies
