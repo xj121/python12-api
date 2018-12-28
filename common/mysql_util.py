@@ -40,6 +40,9 @@ class MysqlUtil:
         cursor.execute(sql)  # 根据sql 进行查询
         return cursor.fetchall() # ((),())
 
+    def close(self):
+        self.mysql.close()
+
 
 if __name__ == '__main__':
     sql = 'select mobilephone from future.member where ' \

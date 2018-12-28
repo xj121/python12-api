@@ -15,12 +15,13 @@ from common import contants
 from common.do_excel import DoExcel
 from common.request import Request
 
-do_excel = DoExcel(contants.case_file)  # 实例化一个DoExcel对象
-cases = do_excel.get_cases('login')
+
 
 
 @ddt
 class TestLogin(unittest.TestCase):
+    do_excel = DoExcel(contants.case_file)  # 实例化一个DoExcel对象
+    cases = do_excel.get_cases('login')
 
     def setUp(self):
         print('测试准备')
