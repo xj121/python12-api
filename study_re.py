@@ -53,3 +53,12 @@ with open('loads.txt', 'r', encoding='utf-8') as fp:  # 打开文件
 financelog = open('loads.txt', 'r', encoding='utf-8').read()  # 读取文件里面的内容并返回一个字符串
 status = re.findall('"status": "1"', financelog)  # 匹配在目标字符串中查找"status": "1"的内容，放到一个列表里面
 print("status=1 的条数为：", len(status))  # 获取列表的长度就代表有多少条"status": "1"的数据
+
+
+#findall
+s = '{"mobilephone":"${normal_user}","pwd":"${pwd}"}'
+pattern = '\$\{(.*?)\}'
+ss = re.findall(pattern,s)
+print(ss)
+
+re.sub(pattern,'aaa',s)
